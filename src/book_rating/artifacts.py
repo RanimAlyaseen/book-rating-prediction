@@ -19,6 +19,7 @@ REQUIRED_BUNDLE_KEYS = {
     "allowed_categories",
     "versions",
     "source_sha256",
+    "data_origin",
 }
 
 

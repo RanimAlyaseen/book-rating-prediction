@@ -10,6 +10,7 @@ venv/
 .env.*
 .streamlit/secrets.toml
 data/raw/
+demo-output/
 models/*.joblib
 models/*.pkl
 *.log

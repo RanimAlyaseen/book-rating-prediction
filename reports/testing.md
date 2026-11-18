@@ -24,26 +24,44 @@ Command:
 python -m pytest
 ```
 
-Development-environment result: **14 passed in 28.18 seconds** (pytest-reported duration).
+Final-patch development result: **22 passed in 33.30 seconds** (pytest-reported duration).
 
-A second virtual environment was then created from scratch. Installing `requirements-dev.txt`, installing the project in editable mode, and running `python -m pip check` all succeeded. The suite result in that clean environment was **14 passed in 31.03 seconds**.
+A new virtual environment was created from scratch after the patch. Installing `requirements-dev.txt`, installing the project in editable mode, and running `python -m pip check` all succeeded. The final suite result in that clean environment was **22 passed in 35.04 seconds**.
 
-The final pre-commit rerun was **14 passed in 22.43 seconds**.
-
-The suite verifies schema failures, invalid values, cleaning and target derivation, group-aware split isolation, training, input feature order, serialization, inference in a fresh Python process, deterministic prediction under reordered input mappings, command-line training, and the application's missing-model state.
+The suite verifies schema failures, invalid values, cleaning and target derivation, group-aware split isolation, rejection of fractional integer fields, training-only model selection, independence from fabricated held-out labels and scores, serialization, inference in a fresh Python process, deterministic prediction under reordered input mappings, command-line training, isolated synthetic demonstration outputs, rejection of the bundled fixture by the research command, and the application's real, synthetic, and missing-model states.
 
 ## Full private-data run
 
-The documented training command completed successfully against the fingerprinted private workbook. It selected Logistic Regression using training-only cross-validated macro F1, wrote all reports and figures, and created a complete local ignored model bundle.
+The documented training command completed successfully against the fingerprinted private workbook. Candidate search and selection used training folds only. Logistic Regression was frozen as the winner before the selected model, dummy baseline, and descriptive Random Forest comparison were evaluated on the holdout.
 
 The regenerated held-out metrics exactly matched the checked JSON output: accuracy 0.457143, positive F1 0.536585, macro F1 0.440706, and ROC-AUC 0.433431.
+
+Comparison with the preceding commit confirmed exact equality for every best parameter, cross-validation score, held-out score, confusion matrix, and bootstrap interval. All four research figures were unchanged. Only evaluation-sequence/provenance metadata and explanatory report text changed.
+
+## Public synthetic demonstration
+
+Commands:
+
+```powershell
+python -m book_rating.demo
+$env:BOOK_RATING_MODEL_PATH = "models/book_rating_demo_pipeline.joblib"
+streamlit run app.py
+```
+
+The command completed using only `data/synthetic_books.csv`. It produced an ignored 5,925-byte demonstration model plus `demo-output/demo-metrics.json`, a synthetic-only report, and four synthetic-only figures. No tracked research output changed.
+
+The generated bundle recorded `data_origin=synthetic_demo`. Streamlit loaded it with no exceptions, displayed the synthetic-data warning and weak real-experiment disclosure, and returned a default uncalibrated model score of 73.6%. The interface explicitly stated that the score is not a verified likelihood.
+
+The exact demonstration command was also rerun with the clean interpreter. A headless Streamlit server started on `127.0.0.1:8765`, and `/_stcore/health` returned HTTP 200 with body `ok` before the test server was stopped.
 
 ## Artifact and application checks
 
 - The locally generated Joblib bundle loaded successfully in a separate Python process.
 - Prediction remained stable when the input mapping order changed.
-- Streamlit's `AppTest` completed with no uncaught exceptions using the actual local bundle.
-- Submitting the default form displayed the `High-rated` class, a 93.5% estimated probability, and the academic-use disclaimer.
-- Running without an artifact displayed recovery instructions instead of raising an exception.
+- Streamlit's `AppTest` completed with no uncaught exceptions for both real and synthetic bundles.
+- The real artifact was identified as a private-data experimental model.
+- The synthetic artifact was identified as a fabricated demonstration model.
+- Scores were labeled as uncalibrated and accompanied by a non-likelihood warning.
+- Running without an artifact displayed the safe synthetic-demo command instead of raising an exception.
 
-The model artifact is intentionally ignored by Git and excluded from the review archive. It can be recreated only from an authorized copy of the source data.
+Both model artifacts are intentionally ignored by Git and excluded from the review archive. The private model can be recreated only from an authorized copy of the source data; the synthetic model can be regenerated from the included fabricated fixture.

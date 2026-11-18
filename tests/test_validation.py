@@ -46,3 +46,23 @@ def test_unknown_controlled_category_is_rejected():
     values = dict(VALID, genre="Unknown")
     with pytest.raises(InputValidationError, match="Unknown genre"):
         validate_prediction_input(values, allowed)
+
+
+@pytest.mark.parametrize("column", ["year", "num_reviews", "num_pages"])
+def test_fractional_integer_fields_are_rejected(column):
+    values = dict(VALID)
+    values[column] = float(values[column]) + 0.5
+    with pytest.raises(InputValidationError, match=f"{column} must be a whole number"):
+        validate_prediction_input(values)
+
+
+def test_integral_float_fields_are_preserved_as_integers():
+    values = dict(VALID, year=2018.0, num_reviews=250.0, num_pages=320.0)
+    validated = validate_prediction_input(values)
+    assert validated["year"] == 2018
+    assert validated["num_reviews"] == 250
+    assert validated["num_pages"] == 320
+    assert all(
+        isinstance(validated[column], int)
+        for column in ["year", "num_reviews", "num_pages"]
+    )

@@ -40,7 +40,12 @@ def validate_prediction_input(
             raise InputValidationError(
                 f"{column} must be between {lower:g} and {upper:g}"
             )
-        validated[column] = int(number) if column in {"year", "num_reviews", "num_pages"} else number
+        if column in {"year", "num_reviews", "num_pages"}:
+            if not number.is_integer():
+                raise InputValidationError(f"{column} must be a whole number")
+            validated[column] = int(number)
+        else:
+            validated[column] = number
 
     for column in CATEGORICAL_FEATURES:
         text = str(values[column]).strip()

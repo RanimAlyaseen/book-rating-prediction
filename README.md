@@ -38,7 +38,7 @@ The comparison intentionally contains only three useful model families:
 - Logistic Regression
 - Random Forest
 
-Hyperparameters are selected with training-fold cross-validation. The held-out set is evaluated once and is never used to switch models.
+Hyperparameters are selected with training-fold cross-validation. The winner is frozen before any held-out predictions are calculated. The selected model, predefined majority baseline, and retained Random Forest comparison are then evaluated on the holdout; those descriptive results cannot change the selected model.
 
 ## Reproduced results
 
@@ -70,11 +70,44 @@ Full metrics, parameters, fold variability, confusion matrices, and aggregate er
 
 ![Selected-model confusion matrix](figures/confusion_matrix.png)
 
-## Streamlit demonstration
+## Public synthetic demonstration
 
-The interface collects all six required features, constrains categories to the trained vocabulary, validates numeric ranges, and displays both the predicted class and the model's estimated probability of `rating >= 4.6`.
+The repository includes 24 fabricated rows so a new user can verify training, serialization, loading, and the Streamlit interface without the private workbook. Synthetic metrics and figures are written only under ignored `demo-output/`; the model is written as the ignored `models/book_rating_demo_pipeline.joblib`. These paths cannot overwrite the published real-data metrics, figures, or model path.
 
-It describes the result as a high-rating prediction, not a personalized recommendation. If the model file is missing or incompatible, the interface displays a training command instead of crashing.
+The synthetic rows and their feature relationships are artificial. Their predictions and evaluation metrics are software demonstrations, not evidence of real-world model performance.
+
+After completing the installation steps below, run from the repository root.
+
+Windows PowerShell:
+
+```powershell
+python -m book_rating.demo
+$env:BOOK_RATING_MODEL_PATH = "models/book_rating_demo_pipeline.joblib"
+streamlit run app.py
+```
+
+Windows Command Prompt:
+
+```bat
+python -m book_rating.demo
+set BOOK_RATING_MODEL_PATH=models\book_rating_demo_pipeline.joblib
+streamlit run app.py
+```
+
+Linux, macOS, or another Unix-like shell:
+
+```sh
+python -m book_rating.demo
+BOOK_RATING_MODEL_PATH=models/book_rating_demo_pipeline.joblib streamlit run app.py
+```
+
+The generated demonstration report is `demo-output/demo-results.md`. It is deliberately excluded from the research report and review archive.
+
+## Streamlit interface
+
+The interface collects all six required features, constrains categories to the trained vocabulary, validates numeric ranges, and displays both the predicted class and an **uncalibrated model score** for the high-rating class.
+
+It identifies whether the loaded artifact came from the private experiment or the synthetic demonstration. It also states that the score is not a verified likelihood and prominently discloses the weak held-out research result. If the model file is missing or incompatible, the interface displays the safe demonstration command instead of crashing.
 
 ```powershell
 streamlit run app.py
@@ -130,13 +163,22 @@ The command writes:
 
 The artifact stores the fitted preprocessing and classifier together, the expected feature order, trained categorical vocabulary, package versions, and source-data SHA-256. It contains no anonymous lambda and loads successfully in a new Python process. Only load artifacts generated locally from trusted code and data.
 
+The research workflow is intentionally sequenced as follows:
+
+1. Create the fixed group-aware holdout.
+2. Search candidate hyperparameters using training folds only.
+3. Select and freeze the winner using cross-validated macro F1.
+4. Evaluate the frozen winner and predefined dummy baseline on the holdout.
+5. Evaluate the retained Random Forest as a descriptive comparison that cannot alter selection.
+6. Refit the already selected configuration on all verified rows for the local deployment artifact.
+
 ## Testing
 
 ```powershell
 python -m pytest
 ```
 
-The tests cover schema validation, cleaning, target derivation, group-aware splitting, numeric and categorical input validation, feature order, training, serialization, loading in a new process, stable inference, end-to-end CLI execution, and Streamlit's missing-model behavior.
+The tests cover schema validation, cleaning, target derivation, group-aware splitting, integer and categorical input validation, feature order, training-only selection, held-out independence, serialization, loading in a new process, stable inference, the public synthetic workflow, end-to-end CLI execution, and both Streamlit artifact states.
 
 See [testing results](reports/testing.md) for the verified environment and commands.
 
@@ -156,6 +198,8 @@ book-rating-prediction/
 │   └── README.md
 ├── reports/
 ├── src/book_rating/
+│   ├── demo.py
+│   └── ...
 └── tests/
 ```
 

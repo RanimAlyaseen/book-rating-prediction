@@ -196,11 +196,9 @@ def run_model_search(
     X_train: pd.DataFrame,
     y_train: pd.Series,
     groups_train: pd.Series,
-    X_test: pd.DataFrame,
-    y_test: pd.Series,
     quick: bool = False,
 ) -> tuple[dict[str, dict[str, object]], dict[str, Pipeline]]:
-    """Tune on training folds and evaluate untouched holdout data once."""
+    """Tune candidate pipelines using training folds only."""
 
     cv = list(
         StratifiedGroupKFold(
@@ -224,8 +222,6 @@ def run_model_search(
         search.fit(X_train, y_train)
         best_index = search.best_index_
         estimator = search.best_estimator_
-        predictions = estimator.predict(X_test)
-        probabilities = estimator.predict_proba(X_test)[:, 1]
         cv_metrics = {
             metric: {
                 "mean": float(search.cv_results_[f"mean_test_{metric}"][best_index]),
@@ -236,12 +232,39 @@ def run_model_search(
         results[name] = {
             "best_params": search.best_params_,
             "cv": cv_metrics,
-            "test": evaluate_predictions(y_test, predictions, probabilities),
-            "confusion_matrix": confusion_matrix(y_test, predictions).tolist(),
         }
         estimators[name] = estimator
 
     return results, estimators
+
+
+def select_model(
+    training_results: dict[str, dict[str, object]],
+    estimators: dict[str, Pipeline],
+) -> tuple[str, Pipeline]:
+    """Freeze the winner from training-fold macro F1 without holdout input."""
+
+    selected_name = max(
+        training_results,
+        key=lambda name: training_results[name]["cv"]["macro_f1"]["mean"],
+    )
+    return selected_name, estimators[selected_name]
+
+
+def evaluate_holdout(
+    estimator: Pipeline,
+    X_test: pd.DataFrame,
+    y_test: pd.Series,
+) -> tuple[dict[str, object], np.ndarray, np.ndarray]:
+    """Evaluate one already-fitted pipeline on the held-out set."""
+
+    predictions = estimator.predict(X_test)
+    probabilities = estimator.predict_proba(X_test)[:, 1]
+    evaluation = {
+        "test": evaluate_predictions(y_test, predictions, probabilities),
+        "confusion_matrix": confusion_matrix(y_test, predictions).tolist(),
+    }
+    return evaluation, predictions, probabilities
 
 
 def refit_for_deployment(estimator: Pipeline, X: pd.DataFrame, y: pd.Series) -> Pipeline:

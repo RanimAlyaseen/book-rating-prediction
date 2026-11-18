@@ -16,6 +16,6 @@ Then run:
 python -m book_rating.train --data data/raw/book_rating_dataset.xlsx
 ```
 
-`data/synthetic_books.csv` contains fabricated records for demonstrations and test development. It must not be used to reproduce the reported model scores.
+`data/synthetic_books.csv` contains 24 fabricated records for demonstrations and test development. It must not be used to reproduce the reported model scores. Run `python -m book_rating.demo` to generate a clearly labeled local demonstration model and isolated outputs; do not pass this fixture to the research training command.
 
 Base dataset reference: https://www.kaggle.com/datasets/sootersaalu/amazon-top-50-bestselling-books-2009-2019

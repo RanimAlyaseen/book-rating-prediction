@@ -19,9 +19,11 @@ from .constants import FEATURE_COLUMNS, TARGET_COLUMN, TARGET_THRESHOLD
 from .data import file_sha256, load_dataset, prepare_dataset, split_features_target
 from .modeling import (
     bootstrap_intervals,
+    evaluate_holdout,
     make_holdout_split,
     refit_for_deployment,
     run_model_search,
+    select_model,
 )
 
 
@@ -175,9 +177,59 @@ def _write_experiment_report(metrics: dict[str, object], output: Path) -> None:
         )
     selected = metrics["selected_model"]
     intervals = metrics["selected_model_test_intervals_95"]
-    text = f"""# Reproduced experiment results
+    if metrics["data_origin"] == "synthetic_demo":
+        title = "Synthetic demonstration results"
+        introduction = (
+            "These outputs come only from the repository's fabricated demonstration "
+            "rows. They verify the software workflow and do not measure real-world "
+            "book-rating performance. Model selection used training-fold macro F1; "
+            "the holdout was evaluated only after the winner was frozen."
+        )
+        interpretation = (
+            f"The training-only selection rule chose **{selected.replace('_', ' ').title()}**. "
+            "All displayed scores are synthetic workflow checks, not research findings, "
+            "calibration evidence, or estimates of performance on real books."
+        )
+        limitations = (
+            "The rows, ratings, and feature relationships are fabricated. This run exists "
+            "only so a new user can train, serialize, load, and exercise the application "
+            "without access to the private university workbook."
+        )
+    else:
+        title = "Reproduced experiment results"
+        introduction = (
+            "These results come from the portfolio pipeline, not from the original course "
+            "report. Model selection used mean macro F1 across five group-aware training "
+            "folds. The winning model was frozen before the held-out set was evaluated. "
+            "The dummy baseline and retained candidate comparison are descriptive and "
+            "cannot change the selected model."
+        )
+        interpretation = (
+            f"The training-only selection rule chose **{selected.replace('_', ' ').title()}**. "
+            f"On the small held-out set, its 95% bootstrap interval was "
+            f"{intervals['macro_f1'][0]:.3f}–{intervals['macro_f1'][1]:.3f} for macro F1 "
+            f"and {intervals['accuracy'][0]:.3f}–{intervals['accuracy'][1]:.3f} for "
+            "accuracy. These intervals describe resampling variability within one "
+            "held-out set, not performance on a new population.\n\n"
+            "The selected Logistic Regression did not beat the majority-class dummy on "
+            "held-out accuracy, positive-class F1, or ROC-AUC. It improved held-out macro "
+            "F1 only from 0.412 to 0.441. Random Forest produced the highest held-out macro "
+            "F1 (0.491), but it is a descriptive comparison: the pipeline did not switch "
+            "models after viewing test results. The experiment therefore does not establish "
+            "a reliable predictive advantage over the simple baseline."
+        )
+        limitations = (
+            "The dataset contains only 348 cleaned observations and one repeated-title "
+            "group. The source population is a curated bestseller collection rather than "
+            "a representative sample of all books. The high-rating label is derived from "
+            "a narrow rating range, category sizes are small, and review counts are highly "
+            "skewed. Results should be treated as an academic demonstration, not as evidence "
+            "that the model generalizes to a commercial catalog."
+        )
 
-These results come from the portfolio pipeline, not from the original course report. Model selection used mean macro F1 across five group-aware training folds. The held-out test set was not used for hyperparameter selection.
+    text = f"""# {title}
+
+{introduction}
 
 ## Data and split
 
@@ -201,19 +253,26 @@ These results come from the portfolio pipeline, not from the original course rep
 |---|---:|---:|---:|---:|---:|---:|
 {chr(10).join(test_rows)}
 
-The training-only selection rule chose **{selected.replace('_', ' ').title()}**. On the small held-out set, its 95% bootstrap interval was {intervals['macro_f1'][0]:.3f}–{intervals['macro_f1'][1]:.3f} for macro F1 and {intervals['accuracy'][0]:.3f}–{intervals['accuracy'][1]:.3f} for accuracy. These intervals describe resampling variability within one held-out set, not performance on a new population.
-
-The selected Logistic Regression did not beat the majority-class dummy on held-out accuracy, positive-class F1, or ROC-AUC. It improved held-out macro F1 only from 0.412 to 0.441. Random Forest produced the highest held-out macro F1 (0.491), but the pipeline did not switch models after viewing test results. The experiment therefore does not establish a reliable predictive advantage over the simple baseline.
+{interpretation}
 
 ## Limitations
 
-The dataset contains only 348 cleaned observations and one repeated-title group. The source population is a curated bestseller collection rather than a representative sample of all books. The high-rating label is derived from a narrow rating range, category sizes are small, and review counts are highly skewed. Results should be treated as an academic demonstration, not as evidence that the model generalizes to a commercial catalog.
+{limitations}
 """
     output.write_text(text, encoding="utf-8")
 
 
 def run(args: argparse.Namespace) -> dict[str, object]:
     source = Path(args.data)
+    data_origin = getattr(args, "data_origin", "private_experiment")
+    bundled_synthetic = (
+        Path(__file__).resolve().parents[2] / "data" / "synthetic_books.csv"
+    )
+    if source.resolve() == bundled_synthetic.resolve() and data_origin != "synthetic_demo":
+        raise ValueError(
+            "The bundled synthetic fixture must be trained with "
+            "`python -m book_rating.demo` so research outputs cannot be overwritten."
+        )
     raw = load_dataset(source)
     prepared = prepare_dataset(raw)
     X, y, groups = split_features_target(prepared)
@@ -222,15 +281,32 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     X_train, X_test = X.iloc[train_index], X.iloc[test_index]
     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
     groups_train = groups.iloc[train_index]
-    model_results, estimators = run_model_search(
-        X_train, y_train, groups_train, X_test, y_test, quick=args.quick
+    training_results, estimators = run_model_search(
+        X_train, y_train, groups_train, quick=args.quick
     )
-    selected_name = max(
-        model_results,
-        key=lambda name: model_results[name]["cv"]["macro_f1"]["mean"],
+    selected_name, selected_evaluation_model = select_model(
+        training_results, estimators
     )
-    selected_evaluation_model = estimators[selected_name]
-    selected_predictions = selected_evaluation_model.predict(X_test)
+
+    model_results: dict[str, dict[str, object]] = {}
+    selected_predictions: np.ndarray | None = None
+    for name, estimator in estimators.items():
+        evaluation, predictions, _ = evaluate_holdout(estimator, X_test, y_test)
+        if name == selected_name:
+            held_out_role = "selected_model"
+            selected_predictions = predictions
+        elif name == "dummy_most_frequent":
+            held_out_role = "predefined_baseline"
+        else:
+            held_out_role = "descriptive_non_selecting_comparison"
+        model_results[name] = {
+            **training_results[name],
+            **evaluation,
+            "held_out_role": held_out_role,
+        }
+
+    if selected_predictions is None:
+        raise RuntimeError("Selected model was not evaluated")
     intervals = bootstrap_intervals(y_test.to_numpy(), selected_predictions)
     deployment_model = refit_for_deployment(selected_evaluation_model, X, y)
 
@@ -251,11 +327,13 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "versions": versions,
         "source_sha256": source_digest,
         "selected_model": selected_name,
+        "data_origin": data_origin,
     }
     save_bundle(bundle, args.model_out)
 
     overlap = set(groups.iloc[train_index]) & set(groups.iloc[test_index])
     metrics: dict[str, object] = {
+        "data_origin": data_origin,
         "data": {
             "source_filename": source.name,
             "source_sha256": source_digest,
@@ -280,6 +358,14 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             "title_group_overlap": len(overlap),
         },
         "selection_metric": "mean cross-validated macro_f1 on training data",
+        "evaluation_sequence": {
+            "selection": "candidate search and winner freeze use training folds only",
+            "holdout": (
+                "selected model, predefined dummy baseline, and descriptive retained "
+                "candidate are evaluated only after selection"
+            ),
+            "non_selection_rule": "held-out results cannot change selected_model",
+        },
         "models": model_results,
         "selected_model": selected_name,
         "selected_model_test_intervals_95": intervals,

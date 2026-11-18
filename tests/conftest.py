@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
+
+from book_rating.demo import run_demo
 
 
 @pytest.fixture
@@ -29,3 +33,17 @@ def synthetic_frame() -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
+
+
+@pytest.fixture(scope="session")
+def demo_run(tmp_path_factory):
+    root = Path(__file__).resolve().parents[1]
+    temporary = tmp_path_factory.mktemp("public-demo")
+    output_root = temporary / "outputs"
+    model_out = temporary / "book_rating_demo_pipeline.joblib"
+    metrics = run_demo(root, output_root, model_out)
+    return {
+        "metrics": metrics,
+        "output_root": output_root,
+        "model": model_out,
+    }

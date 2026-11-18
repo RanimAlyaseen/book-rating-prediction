@@ -1,6 +1,6 @@
 # Reproduced experiment results
 
-These results come from the portfolio pipeline, not from the original course report. Model selection used mean macro F1 across five group-aware training folds. The held-out test set was not used for hyperparameter selection.
+These results come from the portfolio pipeline, not from the original course report. Model selection used mean macro F1 across five group-aware training folds. The winning model was frozen before the held-out set was evaluated. The dummy baseline and retained candidate comparison are descriptive and cannot change the selected model.
 
 ## Data and split
 
@@ -30,7 +30,7 @@ These results come from the portfolio pipeline, not from the original course rep
 
 The training-only selection rule chose **Logistic Regression**. On the small held-out set, its 95% bootstrap interval was 0.326–0.554 for macro F1 and 0.343–0.571 for accuracy. These intervals describe resampling variability within one held-out set, not performance on a new population.
 
-The selected Logistic Regression did not beat the majority-class dummy on held-out accuracy, positive-class F1, or ROC-AUC. It improved held-out macro F1 only from 0.412 to 0.441. Random Forest produced the highest held-out macro F1 (0.491), but the pipeline did not switch models after viewing test results. The experiment therefore does not establish a reliable predictive advantage over the simple baseline.
+The selected Logistic Regression did not beat the majority-class dummy on held-out accuracy, positive-class F1, or ROC-AUC. It improved held-out macro F1 only from 0.412 to 0.441. Random Forest produced the highest held-out macro F1 (0.491), but it is a descriptive comparison: the pipeline did not switch models after viewing test results. The experiment therefore does not establish a reliable predictive advantage over the simple baseline.
 
 ## Limitations
 

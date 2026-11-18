@@ -18,8 +18,13 @@ st.write(
     "(rating at least 4.6) from six metadata fields."
 )
 
-default_model = Path(__file__).resolve().parent / "models" / "book_rating_pipeline.joblib"
-model_path = Path(os.environ.get("BOOK_RATING_MODEL_PATH", default_model))
+models_dir = Path(__file__).resolve().parent / "models"
+real_model = models_dir / "book_rating_pipeline.joblib"
+demo_model = models_dir / "book_rating_demo_pipeline.joblib"
+explicit_model = os.environ.get("BOOK_RATING_MODEL_PATH")
+model_path = Path(explicit_model) if explicit_model else (
+    real_model if real_model.is_file() else demo_model
+)
 
 
 @st.cache_resource
@@ -32,11 +37,31 @@ try:
 except (FileNotFoundError, EOFError, ValueError, ImportError, AttributeError) as exc:
     st.error("A compatible trained model is not available.")
     st.code(
-        "python -m book_rating.train --data <authorized-dataset.xlsx>",
+        "python -m book_rating.demo\nstreamlit run app.py",
         language="powershell",
+    )
+    st.write(
+        "The command above creates a local model only from the included fabricated rows. "
+        "Authorized private-data training remains documented separately."
     )
     st.caption(f"Model loading detail: {exc}")
     st.stop()
+
+if bundle["data_origin"] == "synthetic_demo":
+    st.warning(
+        "Synthetic demonstration model loaded. Its rows and relationships are fabricated; "
+        "predictions and metrics do not establish performance on real books."
+    )
+else:
+    st.info(
+        "Private-data experimental model loaded. The source workbook and model binary are "
+        "not published in this repository."
+    )
+
+st.warning(
+    "Published private-data evaluation was weak: held-out accuracy was 45.7% and "
+    "ROC-AUC was 43.3%. The selected model did not reliably outperform the majority baseline."
+)
 
 genres = bundle["allowed_categories"]["genre"]
 sub_genres = bundle["allowed_categories"]["sub_genre"]
@@ -72,7 +97,11 @@ if submitted:
     else:
         label = "High-rated (rating ≥ 4.6)" if prediction == 1 else "Not high-rated (rating < 4.6)"
         st.subheader(label)
-        st.metric("Estimated probability of rating ≥ 4.6", f"{probability:.1%}")
+        st.metric("Uncalibrated model score for the high-rating class", f"{probability:.1%}")
+        st.caption(
+            "This score is not calibrated and is not a verified likelihood that a book "
+            "will receive a rating of at least 4.6."
+        )
 
 st.caption(
     "Academic demonstration only. The model uses a small curated dataset and does "
