@@ -1,0 +1,25 @@
+book_id,name,author,rating,year,genre,price,num_reviews,num_pages,sub_genre
+1,Synthetic Book 01,Synthetic Author 01,4.7,2016,Fiction,12.99,1250,320,Adventure
+2,Synthetic Book 02,Synthetic Author 02,4.3,2014,Fiction,9.99,220,280,Mystery
+3,Synthetic Book 03,Synthetic Author 03,4.8,2019,Childrens,14.50,3100,180,Education
+4,Synthetic Book 04,Synthetic Author 04,4.2,2012,Non Fiction,18.00,140,410,Business
+5,Synthetic Book 05,Synthetic Author 05,4.6,2018,Non Fiction,11.25,980,295,Self-Help
+6,Synthetic Book 06,Synthetic Author 06,4.7,2020,Fiction,15.75,1840,360,Adventure
+7,Synthetic Book 07,Synthetic Author 07,4.4,2011,Fiction,8.50,75,250,Mystery
+8,Synthetic Book 08,Synthetic Author 08,4.9,2021,Childrens,10.00,4500,144,Education
+9,Synthetic Book 09,Synthetic Author 09,4.6,2017,Non Fiction,16.99,760,330,Business
+10,Synthetic Book 10,Synthetic Author 10,4.1,2010,Non Fiction,13.49,65,500,Self-Help
+11,Synthetic Book 11,Synthetic Author 11,4.7,2015,Fiction,7.99,2100,305,Adventure
+12,Synthetic Book 12,Synthetic Author 12,4.5,2013,Fiction,12.00,330,275,Mystery
+13,Synthetic Book 13,Synthetic Author 13,4.8,2022,Childrens,9.50,5200,160,Education
+14,Synthetic Book 14,Synthetic Author 14,4.6,2018,Non Fiction,21.00,890,420,Business
+15,Synthetic Book 15,Synthetic Author 15,4.3,2009,Non Fiction,17.25,95,380,Self-Help
+16,Synthetic Book 16,Synthetic Author 16,4.7,2019,Fiction,14.00,2750,340,Adventure
+17,Synthetic Book 17,Synthetic Author 17,4.2,2012,Fiction,10.25,125,260,Mystery
+18,Synthetic Book 18,Synthetic Author 18,4.9,2023,Childrens,11.50,6400,192,Education
+19,Synthetic Book 19,Synthetic Author 19,4.6,2016,Non Fiction,19.99,1020,450,Business
+20,Synthetic Book 20,Synthetic Author 20,4.4,2011,Non Fiction,15.00,180,310,Self-Help
+21,Synthetic Book 21,Synthetic Author 21,4.8,2020,Fiction,13.25,3600,370,Adventure
+22,Synthetic Book 22,Synthetic Author 22,4.3,2014,Fiction,9.50,205,290,Mystery
+23,Synthetic Book 23,Synthetic Author 23,4.7,2021,Childrens,12.75,4800,175,Education
+24,Synthetic Book 24,Synthetic Author 24,4.6,2017,Non Fiction,18.50,930,400,Business

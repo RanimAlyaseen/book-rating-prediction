@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "book-rating-prediction"
+version = "1.0.0"
+description = "Reproducible binary classification of high-rated books from tabular metadata"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "joblib==1.6.0",
+  "matplotlib==3.11.2",
+  "numpy==2.5.5",
+  "openpyxl==3.1.5",
+  "pandas==3.1.1",
+  "scikit-learn==1.9.1",
+  "streamlit==1.67.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]

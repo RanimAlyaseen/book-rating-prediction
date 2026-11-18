@@ -1,0 +1,418 @@
+{
+  "data": {
+    "source_filename": "book recomendation final_dataset.xlsx",
+    "source_sha256": "74ac6a8af44cbe04d3824b39a14b40634ba859a275819c74d00b8ee4ea40777e",
+    "raw_rows": 350,
+    "clean_rows": 348,
+    "removed_nonpositive_price_rows": 2,
+    "positive_count": 241,
+    "negative_count": 107,
+    "positive_rate": 0.692529,
+    "exact_duplicate_rows": 0,
+    "repeated_title_groups": 1
+  },
+  "split": {
+    "method": "first fold of shuffled StratifiedGroupKFold(n_splits=5)",
+    "random_state": 42,
+    "train_rows": 278,
+    "test_rows": 70,
+    "train_positive_rate": 0.690647,
+    "test_positive_rate": 0.7,
+    "title_group_overlap": 0
+  },
+  "selection_metric": "mean cross-validated macro_f1 on training data",
+  "models": {
+    "dummy_most_frequent": {
+      "best_params": {},
+      "cv": {
+        "accuracy": {
+          "mean": 0.6906493506493506,
+          "std": 0.006523954588366942
+        },
+        "precision": {
+          "mean": 0.6906493506493506,
+          "std": 0.006523954588366942
+        },
+        "recall": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "f1": {
+          "mean": 0.817004900721261,
+          "std": 0.004582581484540853
+        },
+        "macro_f1": {
+          "mean": 0.4085024503606305,
+          "std": 0.0022912907422704266
+        },
+        "roc_auc": {
+          "mean": 0.5,
+          "std": 0.0
+        }
+      },
+      "test": {
+        "accuracy": 0.7,
+        "precision": 0.7,
+        "recall": 1.0,
+        "f1": 0.8235294117647058,
+        "macro_f1": 0.4117647058823529,
+        "roc_auc": 0.5
+      },
+      "confusion_matrix": [
+        [
+          0,
+          21
+        ],
+        [
+          0,
+          49
+        ]
+      ]
+    },
+    "logistic_regression": {
+      "best_params": {
+        "model__C": 10.0,
+        "model__class_weight": "balanced"
+      },
+      "cv": {
+        "accuracy": {
+          "mean": 0.6335064935064935,
+          "std": 0.0763503279329989
+        },
+        "precision": {
+          "mean": 0.7922432452604866,
+          "std": 0.07075434512785761
+        },
+        "recall": {
+          "mean": 0.6353576248313091,
+          "std": 0.06631332325801861
+        },
+        "f1": {
+          "mean": 0.7046050158936431,
+          "std": 0.06625072284257122
+        },
+        "macro_f1": {
+          "mean": 0.6097400747779617,
+          "std": 0.07894045958698839
+        },
+        "roc_auc": {
+          "mean": 0.6523034584954089,
+          "std": 0.05459340376067093
+        }
+      },
+      "test": {
+        "accuracy": 0.45714285714285713,
+        "precision": 0.6666666666666666,
+        "recall": 0.4489795918367347,
+        "f1": 0.5365853658536586,
+        "macro_f1": 0.44070647603027757,
+        "roc_auc": 0.43343051506316815
+      },
+      "confusion_matrix": [
+        [
+          10,
+          11
+        ],
+        [
+          27,
+          22
+        ]
+      ]
+    },
+    "random_forest": {
+      "best_params": {
+        "model__class_weight": "balanced_subsample",
+        "model__max_depth": 8,
+        "model__min_samples_leaf": 4,
+        "model__n_estimators": 500
+      },
+      "cv": {
+        "accuracy": {
+          "mean": 0.6151298701298702,
+          "std": 0.03865114854078303
+        },
+        "precision": {
+          "mean": 0.7424434389140272,
+          "std": 0.018935859843770355
+        },
+        "recall": {
+          "mean": 0.6767881241565452,
+          "std": 0.06016835459687499
+        },
+        "f1": {
+          "mean": 0.7070366203307381,
+          "std": 0.03937486981168509
+        },
+        "macro_f1": {
+          "mean": 0.5703897614485849,
+          "std": 0.03368335563418307
+        },
+        "roc_auc": {
+          "mean": 0.6231166150670795,
+          "std": 0.05008322294866358
+        }
+      },
+      "test": {
+        "accuracy": 0.5285714285714286,
+        "precision": 0.7,
+        "recall": 0.5714285714285714,
+        "f1": 0.6292134831460674,
+        "macro_f1": 0.49107732980832786,
+        "roc_auc": 0.47619047619047616
+      },
+      "confusion_matrix": [
+        [
+          9,
+          12
+        ],
+        [
+          21,
+          28
+        ]
+      ]
+    }
+  },
+  "selected_model": "logistic_regression",
+  "selected_model_test_intervals_95": {
+    "accuracy": [
+      0.34285714285714286,
+      0.5714285714285714
+    ],
+    "f1": [
+      0.4,
+      0.652642320085929
+    ],
+    "macro_f1": [
+      0.3262032085561497,
+      0.5536039377289376
+    ]
+  },
+  "error_analysis": {
+    "genre": [
+      {
+        "genre": "Non Fiction",
+        "observations": 36,
+        "errors": 20,
+        "error_rate": 0.555556,
+        "false_positives": 8,
+        "false_negatives": 12
+      },
+      {
+        "genre": "Fiction",
+        "observations": 24,
+        "errors": 17,
+        "error_rate": 0.708333,
+        "false_positives": 2,
+        "false_negatives": 15
+      },
+      {
+        "genre": "Childrens",
+        "observations": 10,
+        "errors": 1,
+        "error_rate": 0.1,
+        "false_positives": 1,
+        "false_negatives": 0
+      }
+    ],
+    "sub_genre": [
+      {
+        "sub_genre": "Mystery",
+        "observations": 5,
+        "errors": 4,
+        "error_rate": 0.8,
+        "false_positives": 0,
+        "false_negatives": 4
+      },
+      {
+        "sub_genre": "Historical Fiction",
+        "observations": 4,
+        "errors": 4,
+        "error_rate": 1.0,
+        "false_positives": 0,
+        "false_negatives": 4
+      },
+      {
+        "sub_genre": "Science",
+        "observations": 4,
+        "errors": 4,
+        "error_rate": 1.0,
+        "false_positives": 1,
+        "false_negatives": 3
+      },
+      {
+        "sub_genre": "Psychology",
+        "observations": 8,
+        "errors": 3,
+        "error_rate": 0.375,
+        "false_positives": 2,
+        "false_negatives": 1
+      },
+      {
+        "sub_genre": "Politics",
+        "observations": 4,
+        "errors": 3,
+        "error_rate": 0.75,
+        "false_positives": 0,
+        "false_negatives": 3
+      },
+      {
+        "sub_genre": "Business",
+        "observations": 3,
+        "errors": 3,
+        "error_rate": 1.0,
+        "false_positives": 0,
+        "false_negatives": 3
+      },
+      {
+        "sub_genre": "Science Fiction",
+        "observations": 3,
+        "errors": 3,
+        "error_rate": 1.0,
+        "false_positives": 0,
+        "false_negatives": 3
+      },
+      {
+        "sub_genre": "Biography",
+        "observations": 4,
+        "errors": 2,
+        "error_rate": 0.5,
+        "false_positives": 2,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Contemporary Fiction",
+        "observations": 2,
+        "errors": 2,
+        "error_rate": 1.0,
+        "false_positives": 0,
+        "false_negatives": 2
+      },
+      {
+        "sub_genre": "Fantasy",
+        "observations": 2,
+        "errors": 2,
+        "error_rate": 1.0,
+        "false_positives": 0,
+        "false_negatives": 2
+      },
+      {
+        "sub_genre": "History",
+        "observations": 2,
+        "errors": 2,
+        "error_rate": 1.0,
+        "false_positives": 0,
+        "false_negatives": 2
+      },
+      {
+        "sub_genre": "Philosophy",
+        "observations": 6,
+        "errors": 1,
+        "error_rate": 0.166667,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Thriller",
+        "observations": 4,
+        "errors": 1,
+        "error_rate": 0.25,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Memoir",
+        "observations": 3,
+        "errors": 1,
+        "error_rate": 0.333333,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Children\u2019s Fantasy",
+        "observations": 2,
+        "errors": 1,
+        "error_rate": 0.5,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Self-Help",
+        "observations": 2,
+        "errors": 1,
+        "error_rate": 0.5,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Adventure",
+        "observations": 1,
+        "errors": 1,
+        "error_rate": 1.0,
+        "false_positives": 1,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Early Readers",
+        "observations": 2,
+        "errors": 0,
+        "error_rate": 0.0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Educational",
+        "observations": 2,
+        "errors": 0,
+        "error_rate": 0.0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Fairy Tales",
+        "observations": 2,
+        "errors": 0,
+        "error_rate": 0.0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Romance",
+        "observations": 2,
+        "errors": 0,
+        "error_rate": 0.0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Adventure Kids",
+        "observations": 1,
+        "errors": 0,
+        "error_rate": 0.0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Comics for Kids",
+        "observations": 1,
+        "errors": 0,
+        "error_rate": 0.0,
+        "false_positives": 0,
+        "false_negatives": 0
+      },
+      {
+        "sub_genre": "Drama",
+        "observations": 1,
+        "errors": 0,
+        "error_rate": 0.0,
+        "false_positives": 0,
+        "false_negatives": 0
+      }
+    ]
+  },
+  "versions": {
+    "numpy": "2.5.5",
+    "pandas": "3.1.1",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0"
+  }
+}
